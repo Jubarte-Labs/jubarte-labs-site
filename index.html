@@ -3,10 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jubarte Labs</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Animated Gradient Background</title>
+    <!-- Replaced Inter font with Anonymous Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Basic Page Setup --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            /* Set the new font family with a monospace fallback */
+            font-family: 'Anonymous Pro', monospace;
+            color: #333;
+            background-color: #ffffff;
+            overflow: hidden; /* Prevents scrollbars from appearing */
+        }
+
+        /* --- Animated Background Styles --- */
+        /* This container holds the dots and isolates their blending effect */
+        .gradient-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            isolation: isolate; /* Crucial for mix-blend-mode to work correctly */
+        }
+
+        /* Base styles for all animated dots */
+        .dot {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            mix-blend-mode: soft-light; /* This creates the beautiful color blending */
+            will-change: transform; /* Performance hint for the browser */
+        }
+
+        /* --- Individual Dot Properties --- */
+        /* NOTE: z-index controls the stacking order. Higher numbers are on top. */
+
+        /* Corrected class name from 'dot-light-turquois' */
+        .dot-light-turquoise {
+            width: 200px;
+            height: 200px;
+            right: -50px;
+            bottom: 50px;
+            background: #252739;
+            animation: dot-animation-2 22s infinite ease-in-out;
+            animation-delay: 3s;
+            z-index: 1; /* In the middle */
+        }
+
+        .dot-dark-grey {
+            width: 300px;
+            height: 300px;
+            right: -150px;
+            bottom: -150px;
+            background: #333139;
+            animation: dot-animation-1 20s infinite ease-in-out;
+            z-index: 3; /* On top */
+        }
+
+        /* This class was in the CSS but not used in the HTML. It's now applied below. */
+        .dot-purple {
+            width: 200px;
+            height: 200px;
+            right: 50px;
+            bottom: -50px;
+            background: #463346;
+            animation: dot-animation-3 25s infinite ease-in-out; /* Uses the 3rd animation */
+            animation-delay: 5s;
+            z-index: 1; /* At the back */
+        }
+
+        /* --- Animation Definitions --- */
+        @keyframes dot-animation-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 80px) scale(1.1); }
+        }
+
+        @keyframes dot-animation-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-80px, -40px) scale(0.9); }
+        }
+
+        @keyframes dot-animation-3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, -60px) scale(1.2); }
+        }
+
+        /* --- Content Layout --- */
+        /* This wrapper ensures the content sits on top of the background */
+        .content-wrapper {
+            position: relative;
+            z-index: 10; /* Ensures content is above the dots */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            /* Changed right padding from 10% to 25% */
+            padding: 0 25% 0 10%;
+            height: 100%;
+        }
+
+        .content h1 {
+            font-size: 5vw;
+            line-height: 1.1;
+            font-weight: 700;
+            color: #131317;
+        }
+
+        /* --- New Element Styles --- */
+        .content p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #454655;
+            max-width: 450px; /* Limits the width for readability */
+            margin-top: 20px;
+        }
+
+        .content .cta-button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-family: 'Anonymous Pro', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f8f7f5;
+            background-color: #454655; /* Matches the dark grey dot */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .content .cta-button:hover {
+            background-color: #131317; /* Darken on hover */
+        }
+
+        /* --- Logo and Header Styles --- */
+        .header {
+            position: fixed; /* Keeps the header at the top */
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* Uses the same horizontal padding as the content */
+            padding: 40px 10%;
+            box-sizing: border-box; /* Ensures padding doesn't add to the width */
+            z-index: 20; /* Sits on top of all other elements */
+        }
+
+        .logo a {
+            display: block;
+            width: 50px; /* Sets the size of the logo */
+        }
+
+        .logo svg {
+            width: 100%;
+            height: auto;
+            fill: #222; /* Matches the heading color */
+            transition: fill 0.3s ease; /* Smooth color change on hover */
+            /* Added animation property */
+            animation: whale-bob 4s ease-in-out infinite;
+        }
+
+        .logo a:hover svg {
+            fill: #5b6f7c; /* Changes to the turquoise color on hover */
+        }
+
+        /* --- New animation for the SVG logo --- */
+        @keyframes whale-bob {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px); /* Moves the whale up slightly */
+            }
+        }
+
+    </style>
 </head>
 <body>
-    <script src="script.js"></script>
+
+    <!-- Added a header to contain the new logo -->
+    <header class="header">
+        <div class="logo">
+            <!-- A simple, inline SVG for the whale logo -->
+            <a href="#" aria-label="Jubarte Labs Home">
+                <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 5 20 Q 25 5, 50 15 T 95 20 C 90 30, 70 35, 50 30 Q 30 25, 5 20 Z" />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <div class="gradient-background">
+        <!-- The order here doesn't matter as much because z-index is set in the CSS -->
+        <div class="dot dot-dark-grey"></div>
+        <div class="dot dot-light-turquoise"></div>
+        <!-- Corrected class name from 'dot-orange' to match the CSS -->
+        <div class="dot dot-purple"></div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="content">
+            <h1>Hello, I'm Simon.<br>I'm a Product Leader.</h1>
+            <!-- Added new paragraph and button -->
+            <p>I co-pilot scaling businesses, using my experience, deep expertise in data and AI to navigate complexity and build a clear path to product success.</p>
+            <a href="mailto:hello@jubartelabs.com" class="cta-button">Work With Me</a>
+        </div>
+    </div>
+
 </body>
 </html>
