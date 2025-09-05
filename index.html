@@ -38,43 +38,43 @@
             filter: blur(70px);
             mix-blend-mode: soft-light; /* This creates the beautiful color blending */
             will-change: transform; /* Performance hint for the browser */
-        }
+        }   
 
         /* --- Individual Dot Properties --- */
         /* NOTE: z-index controls the stacking order. Higher numbers are on top. */
 
         /* Corrected class name from 'dot-light-turquois' */
         .dot-light-turquoise {
-            width: 200px;
-            height: 200px;
-            right: -50px;
-            bottom: 50px;
-            background: #252739;
+            width: 650px;
+            height: 650px;
+            right: -300px;
+            bottom: -50px;
+            background: #566b7a;
             animation: dot-animation-2 22s infinite ease-in-out;
             animation-delay: 3s;
             z-index: 1; /* In the middle */
         }
 
         .dot-dark-grey {
-            width: 300px;
-            height: 300px;
-            right: -150px;
-            bottom: -150px;
+            width: 750px;
+            height: 750px;
+            right: -350px;
+            bottom: -350px;
             background: #333139;
             animation: dot-animation-1 20s infinite ease-in-out;
-            z-index: 3; /* On top */
+            z-index: 1; /* On top */
         }
 
         /* This class was in the CSS but not used in the HTML. It's now applied below. */
         .dot-purple {
-            width: 200px;
-            height: 200px;
-            right: 50px;
-            bottom: -50px;
+            width: 650px;
+            height: 650px;
+            right: -100px;
+            bottom: -300px;
             background: #463346;
             animation: dot-animation-3 25s infinite ease-in-out; /* Uses the 3rd animation */
             animation-delay: 5s;
-            z-index: 1; /* At the back */
+            z-index: 2; /* At the back */
         }
 
         /* --- Animation Definitions --- */
@@ -106,6 +106,13 @@
             height: 100%;
         }
 
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+        }
+
         .content h1 {
             font-size: 5vw;
             line-height: 1.1;
@@ -115,15 +122,13 @@
 
         /* --- New Element Styles --- */
         .content p {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             line-height: 1.6;
             color: #454655;
             max-width: 450px; /* Limits the width for readability */
-            margin-top: 20px;
         }
 
         .content .cta-button {
-            margin-top: 30px;
             padding: 15px 30px;
             font-family: 'Anonymous Pro', monospace;
             font-size: 1rem;
@@ -155,29 +160,60 @@
 
         .logo a {
             display: block;
-            width: 50px; /* Sets the size of the logo */
         }
 
-        .logo svg {
-            width: 100%;
+        .logo img {
+            width: 250px; /* Adjust width as needed */
             height: auto;
-            fill: #222; /* Matches the heading color */
-            transition: fill 0.3s ease; /* Smooth color change on hover */
-            /* Added animation property */
-            animation: whale-bob 4s ease-in-out infinite;
         }
 
-        .logo a:hover svg {
-            fill: #5b6f7c; /* Changes to the turquoise color on hover */
-        }
-
-        /* --- New animation for the SVG logo --- */
-        @keyframes whale-bob {
-            0%, 100% {
-                transform: translateY(0);
+            @media (max-width: 768px) {
+            .header {
+                display: flex;
+                justify-content: center;
+                padding: 40px 0; /* Adjust padding for centered logo */
             }
-            50% {
-                transform: translateY(-4px); /* Moves the whale up slightly */
+            .content-wrapper {
+                padding: 0 10%;
+                justify-content: center; /* Center content on mobile */
+                text-align: center; /* Center text inside content */
+            }
+
+            .content {
+                align-items: center; /* Center items in flex container */
+            }
+
+            .gradient-background {
+                display: none; /* Hide the dots on small screens */
+            }
+        }
+
+            @media (orientation: landscape) and (max-height: 680px),
+               (orientation: portrait) and (max-width: 320px) {
+            html, body {
+                overflow-y: auto; /* Allow vertical scrolling */
+            }
+
+            .header {
+                position: static; /* Make the header part of the document flow */
+                padding: 20px; /* Adjust padding for a scrolling layout */
+                display: flex;
+                justify-content: center;
+            }
+
+            .content-wrapper {
+                height: auto; /* Allow the content to define its own height */
+                padding: 20px 10%; /* Adjust padding */
+                justify-content: center; /* Keep content centered */
+                text-align: center;
+            }
+
+            .gradient-background {
+                display: none; /* Hide dots on small screens, as we do for mobile */
+            }
+
+            .content {
+                align-items: center; /* Center flex items, including the button */
             }
         }
 
@@ -190,9 +226,7 @@
         <div class="logo">
             <!-- A simple, inline SVG for the whale logo -->
             <a href="#" aria-label="Jubarte Labs Home">
-                <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M 5 20 Q 25 5, 50 15 T 95 20 C 90 30, 70 35, 50 30 Q 30 25, 5 20 Z" />
-                </svg>
+                <img src="assets/Logo + text.svg" alt="Jubarte Labs Logo">
             </a>
         </div>
     </header>
@@ -209,7 +243,7 @@
         <div class="content">
             <h1>Hello, I'm Simon.<br>I'm a Product Leader.</h1>
             <!-- Added new paragraph and button -->
-            <p>I co-pilot scaling businesses, using my experience, deep expertise in data and AI to navigate complexity and build a clear path to product success.</p>
+            <p>I work with businesses as a strategic co-pilot, providing hands-on, data-driven product leadership to turn complexity into a clear path to success.</p>
             <a href="mailto:hello@jubartelabs.com" class="cta-button">Work With Me</a>
         </div>
     </div>
