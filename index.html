@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Gradient Background</title>
+    <title>Jubarte Labs</title>
     <!-- Replaced Inter font with Anonymous Pro -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,6 +167,25 @@
             height: auto;
         }
 
+        .about-me {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 20px;
+            background-color: #f9f9f9;
+            max-width: 450px;
+        }
+
+        .about-me h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #131317;
+        }
+
+        .hidden {
+            display: none;
+        }
+
             @media (max-width: 768px) {
             .header {
                 display: flex;
@@ -245,8 +264,27 @@
             <!-- Added new paragraph and button -->
             <p>I work with businesses as a strategic co-pilot, providing hands-on, data-driven product leadership to turn complexity into a clear path to success.</p>
             <a href="mailto:hello@jubartelabs.com" class="cta-button">Work With Me</a>
+
+            <div id="about-me-section" class="about-me hidden">
+                <h2>About Me</h2>
+                <p>This is the about me section. It is currently hidden by a feature flag.</p>
+            </div>
         </div>
     </div>
 
+    <script>
+        // --- Feature Flags ---
+        const featureFlags = {
+            showAboutMe: false // Set to true to show the "About Me" section
+        };
+
+        // --- Toggle Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const aboutMeSection = document.getElementById('about-me-section');
+            if (featureFlags.showAboutMe) {
+                aboutMeSection.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
