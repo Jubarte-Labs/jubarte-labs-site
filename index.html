@@ -135,8 +135,8 @@
             font-family: 'Anonymous Pro', monospace;
             font-size: 1rem;
             font-weight: 700;
-            color: #f8f7f5;
-            background-color: #454655; /* Matches the dark grey dot */
+            color: #FFFFFF;
+            background-color: #131317;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -145,7 +145,7 @@
         }
 
         .content .cta-button:hover {
-            background-color: #131317; /* Darken on hover */
+            background-color: #333337; /* Lighter shade on hover */
         }
 
         /* --- Logo and Header Styles --- */
@@ -155,7 +155,7 @@
             left: 0;
             width: 100%;
             /* Uses the same horizontal padding as the content */
-            padding: 40px 10%;
+            padding: 60px 10%;
             box-sizing: border-box; /* Ensures padding doesn't add to the width */
             z-index: 20; /* Sits on top of all other elements */
         }
@@ -192,7 +192,7 @@
             .header {
                 display: flex;
                 justify-content: center;
-                padding: 40px 0; /* Adjust padding for centered logo */
+                padding: 60px 0; /* Adjust padding for centered logo */
             }
             .content-wrapper {
                 padding: 0 10%;
@@ -206,7 +206,6 @@
 
             .dot {
                 filter: blur(40px);
-                animation: none; /* Disable animations on mobile */
             }
 
             .dot-light-turquoise, .dot-dark-grey, .dot-purple {
@@ -220,22 +219,24 @@
             }
 
             .dot-dark-grey {
-                right: -50px;
+                right: -100px;
                 bottom: -200px;
             }
 
             .dot-purple {
-                right: 50px;
-                bottom: -180px;
+                right: -200px;
+                bottom: -100px;
             }
 
             .logo img {
                 width: 70%;
                 max-width: 220px;
+                display: block;
+                margin: 0 auto;
             }
         }
 
-            @media (orientation: landscape) and (max-height: 680px),
+            @media (orientation: landscape) and (max-height: 680px) and (max-width: 1024px),
                (orientation: portrait) and (max-width: 320px) {
             html, body {
                 overflow-y: auto; /* Allow vertical scrolling */
@@ -243,7 +244,7 @@
 
             .header {
                 position: static; /* Make the header part of the document flow */
-                padding: 20px; /* Adjust padding for a scrolling layout */
+                padding: 30px; /* Adjust padding for a scrolling layout */
                 display: flex;
                 justify-content: center;
             }
