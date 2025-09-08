@@ -17,7 +17,7 @@
             margin: 0;
             /* Set the new font family with a monospace fallback */
             font-family: 'Anonymous Pro', monospace;
-            color: #333;
+            color: #131317;
             background-color: #ffffff;
             overflow: hidden; /* Prevents scrollbars from appearing */
         }
@@ -62,7 +62,7 @@
             height: 750px;
             right: -350px;
             bottom: -350px;
-            background: #333139;
+            background: #333337;
             animation: dot-animation-1 20s infinite ease-in-out;
             z-index: 1; /* On top */
         }
@@ -135,8 +135,8 @@
             font-family: 'Anonymous Pro', monospace;
             font-size: 1rem;
             font-weight: 700;
-            color: #f8f7f5;
-            background-color: #454655; /* Matches the dark grey dot */
+            color: #FFFFFF;
+            background-color: #131317;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -145,7 +145,7 @@
         }
 
         .content .cta-button:hover {
-            background-color: #131317; /* Darken on hover */
+            background-color: #566b7a; /* Lighter shade on hover */
         }
 
         /* --- Logo and Header Styles --- */
@@ -155,7 +155,7 @@
             left: 0;
             width: 100%;
             /* Uses the same horizontal padding as the content */
-            padding: 40px 10%;
+            padding: 60px 10%;
             box-sizing: border-box; /* Ensures padding doesn't add to the width */
             z-index: 20; /* Sits on top of all other elements */
         }
@@ -189,13 +189,21 @@
         }
 
             @media (max-width: 768px) {
+            /* --- Scrolling Layout for Tablets & Mobiles --- */
+            html, body {
+                overflow-y: auto; /* Allow vertical scrolling */
+            }
+
             .header {
+                position: static; /* Make the header part of the document flow */
                 display: flex;
                 justify-content: center;
-                padding: 40px 0; /* Adjust padding for centered logo */
+                padding: 40px 0; /* Adjust padding for scrolling layout */
             }
+
             .content-wrapper {
-                padding: 0 10%;
+                height: auto; /* Allow the content to define its own height */
+                padding: 20px 10%; /* Adjust vertical padding */
                 justify-content: center; /* Center content on mobile */
                 text-align: center; /* Center text inside content */
             }
@@ -204,11 +212,12 @@
                 align-items: center; /* Center items in flex container */
             }
 
+            /* --- Dot Adjustments for Smaller Screens --- */
             .dot {
                 filter: blur(40px);
-                animation: none; /* Disable animations on mobile */
             }
 
+            /* The gradient background remains fixed, so dots stay at the bottom of the viewport */
             .dot-light-turquoise, .dot-dark-grey, .dot-purple {
                 width: 300px;
                 height: 300px;
@@ -220,47 +229,20 @@
             }
 
             .dot-dark-grey {
-                right: -50px;
+                right: -100px;
                 bottom: -200px;
             }
 
             .dot-purple {
-                right: 50px;
-                bottom: -180px;
+                right: -200px;
+                bottom: -100px;
             }
 
             .logo img {
                 width: 70%;
                 max-width: 220px;
-            }
-        }
-
-            @media (orientation: landscape) and (max-height: 680px),
-               (orientation: portrait) and (max-width: 320px) {
-            html, body {
-                overflow-y: auto; /* Allow vertical scrolling */
-            }
-
-            .header {
-                position: static; /* Make the header part of the document flow */
-                padding: 20px; /* Adjust padding for a scrolling layout */
-                display: flex;
-                justify-content: center;
-            }
-
-            .content-wrapper {
-                height: auto; /* Allow the content to define its own height */
-                padding: 20px 10%; /* Adjust padding */
-                justify-content: center; /* Keep content centered */
-                text-align: center;
-            }
-
-            .gradient-background {
-                display: none; /* Hide dots on small screens, as we do for mobile */
-            }
-
-            .content {
-                align-items: center; /* Center flex items, including the button */
+                display: block;
+                margin: 0 auto;
             }
         }
 
