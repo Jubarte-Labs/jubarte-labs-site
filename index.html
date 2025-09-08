@@ -188,7 +188,7 @@
             display: none;
         }
 
-            @media (max-width: 500px) {
+            @media (max-width: 768px) {
             .header {
                 display: flex;
                 justify-content: center;
@@ -204,8 +204,34 @@
                 align-items: center; /* Center items in flex container */
             }
 
-            .gradient-background {
-                display: none; /* Hide the dots on small screens */
+            .dot {
+                filter: blur(40px);
+                animation: none; /* Disable animations on mobile */
+            }
+
+            .dot-light-turquoise, .dot-dark-grey, .dot-purple {
+                width: 300px;
+                height: 300px;
+            }
+
+            .dot-light-turquoise {
+                right: -150px;
+                bottom: -150px;
+            }
+
+            .dot-dark-grey {
+                right: -50px;
+                bottom: -200px;
+            }
+
+            .dot-purple {
+                right: 50px;
+                bottom: -180px;
+            }
+
+            .logo img {
+                width: 70%;
+                max-width: 220px;
             }
         }
 
@@ -242,8 +268,10 @@
 </head>
 <body>
 
+    <!-- Added a header to contain the new logo -->
     <header class="header">
         <div class="logo">
+            <!-- A simple, inline SVG for the whale logo -->
             <a href="#" aria-label="Jubarte Labs Home">
                 <img src="assets/Logo + text.svg" alt="Jubarte Labs Logo">
             </a>
@@ -251,14 +279,17 @@
     </header>
 
     <div class="gradient-background">
+        <!-- The order here doesn't matter as much because z-index is set in the CSS -->
         <div class="dot dot-dark-grey"></div>
         <div class="dot dot-light-turquoise"></div>
+        <!-- Corrected class name from 'dot-orange' to match the CSS -->
         <div class="dot dot-purple"></div>
     </div>
 
     <div class="content-wrapper">
         <div class="content">
             <h1>Hello, I'm Simon.<br>I'm a Product Leader.</h1>
+            <!-- Added new paragraph and button -->
             <p>I work with businesses as a strategic co-pilot, providing hands-on, data-driven product leadership to turn complexity into a clear path to success.</p>
             <a href="mailto:hello@jubartelabs.com" class="cta-button">Work With Me</a>
 
