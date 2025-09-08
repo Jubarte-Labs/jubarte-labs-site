@@ -188,7 +188,7 @@
             display: none;
         }
 
-            @media (max-width: 768px) {
+            @media (max-width: 500px) {
             .header {
                 display: flex;
                 justify-content: center;
@@ -242,10 +242,8 @@
 </head>
 <body>
 
-    <!-- Added a header to contain the new logo -->
     <header class="header">
         <div class="logo">
-            <!-- A simple, inline SVG for the whale logo -->
             <a href="#" aria-label="Jubarte Labs Home">
                 <img src="assets/Logo + text.svg" alt="Jubarte Labs Logo">
             </a>
@@ -253,17 +251,14 @@
     </header>
 
     <div class="gradient-background">
-        <!-- The order here doesn't matter as much because z-index is set in the CSS -->
         <div class="dot dot-dark-grey"></div>
         <div class="dot dot-light-turquoise"></div>
-        <!-- Corrected class name from 'dot-orange' to match the CSS -->
         <div class="dot dot-purple"></div>
     </div>
 
     <div class="content-wrapper">
         <div class="content">
             <h1>Hello, I'm Simon.<br>I'm a Product Leader.</h1>
-            <!-- Added new paragraph and button -->
             <p>I work with businesses as a strategic co-pilot, providing hands-on, data-driven product leadership to turn complexity into a clear path to success.</p>
             <a href="mailto:hello@jubartelabs.com" class="cta-button">Work With Me</a>
 
