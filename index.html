@@ -22,6 +22,11 @@
             overflow: hidden; /* Prevents scrollbars from appearing */
         }
 
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
         /* --- Animated Background Styles --- */
         /* This container holds the dots and isolates their blending effect */
         .gradient-background {
@@ -105,14 +110,15 @@
             justify-content: flex-start;
             /* Changed right padding from 10% to 25% */
             padding: 0 25% 0 10%;
-            height: 100%;
+            height: auto; /* Let flexbox handle the height */
+            flex-grow: 1; /* Allow content to fill remaining space */
         }
 
         .content {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 30px;
+            gap: 5px;
         }
 
         .content h1 {
@@ -120,6 +126,7 @@
             line-height: 1.1;
             font-weight: 700;
             color: #131317;
+            margin: 0;
         }
 
         /* --- New Element Styles --- */
@@ -150,27 +157,33 @@
 
         /* --- Logo and Header Styles --- */
         .header {
-            position: fixed; /* Keeps the header at the top */
-            top: 0;
-            left: 0;
-            width: 100%;
+            position: static; /* Removed fixed positioning */
             /* Uses the same horizontal padding as the content */
-            padding: 60px 10%;
+            padding: 30px 10% 0; /* Reduced top padding */
             box-sizing: border-box; /* Ensures padding doesn't add to the width */
             z-index: 20; /* Sits on top of all other elements */
+            flex-shrink: 0; /* Prevents header from shrinking */
         }
 
         .logo a {
             display: block;
         }
 
+        .logo-object {
+            display: block;
+            height: 75px;
+            width: auto;
+            pointer-events: none; /* Ensures the link around the logo remains clickable */
+        }
+
         .logo img {
             width: 250px; /* Adjust width as needed */
+            max-width: 100%; /* Ensures logo is never cut off */
             height: auto;
         }
 
         .about-me {
-            margin-top: 20px;
+            margin-top: 10px;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 10px 20px;
@@ -239,10 +252,11 @@
             }
 
             .logo img {
-                width: 70%;
-                max-width: 220px;
+                /* Final attempt for mobile: Control height */
                 display: block;
-                margin: 0 auto;
+                height: 55px; /* Smaller height for mobile */
+                width: auto;
+                margin: 0 auto; /* Keep centering */
             }
         }
 
@@ -255,7 +269,7 @@
         <div class="logo">
             <!-- A simple, inline SVG for the whale logo -->
             <a href="#" aria-label="Jubarte Labs Home">
-                <img src="assets/Logo + text.svg" alt="Jubarte Labs Logo">
+                <object type="image/svg+xml" data="assets/Logo + text.svg" class="logo-object" aria-label="Jubarte Labs Logo"></object>
             </a>
         </div>
     </header>
