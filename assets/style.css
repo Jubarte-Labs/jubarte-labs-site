@@ -4,7 +4,7 @@
     --background-color: #ffffff;
     --button-text-color: #FFFFFF;
     --accent-color-1: #566b7a;
-    --accent-color-2: #333337;
+    --accent-color-2: #454655;
     --accent-color-3: #463346;
     --border-color: #ddd;
     --about-me-bg-color: #f9f9f9;
@@ -104,7 +104,7 @@ body {
 .content-wrapper {
     position: relative;
     z-index: 10; /* Ensures content is above the dots */
-    display: flex;
+    /*display: flex; commented out */
     align-items: center;
     justify-content: flex-start;
     /* Changed right padding from 10% to 25% */
@@ -121,16 +121,18 @@ body {
 }
 
 .content h1 {
-    font-size: 5vw;
+    font-size: 4vw;
     line-height: 1.1;
     font-weight: 700;
     color: var(--primary-text-color);
     margin: 0;
+    padding-top: 40px; /* Added padding to separate from header */
+
 }
 
 /* --- New Element Styles --- */
 .content p {
-    font-size: 1.3rem;
+    font-size: 1.7vw;
     line-height: 1.6;
     color: var(--secondary-text-color);
     max-width: 450px; /* Limits the width for readability */
@@ -170,10 +172,11 @@ body {
 
 .logo-img {
     display: block;
-    height: 75px;
+    height: 55px;
     width: auto;
     max-width: 100%; /* Ensures logo is never cut off */
     pointer-events: none; /* Ensures the link around the logo remains clickable */
+    margin-top: 20px;
 }
 
 .about-me {
@@ -194,9 +197,9 @@ body {
 .hidden {
     display: none;
 }
-
+    
+/* --- Scrolling Layout for Tablets & Mobiles --- */
     @media (max-width: 768px) {
-    /* --- Scrolling Layout for Tablets & Mobiles --- */
     html, body {
         overflow-y: auto; /* Allow vertical scrolling */
     }
@@ -219,6 +222,19 @@ body {
         align-items: center; /* Center items in flex container */
     }
 
+    .content h1 {
+    font-size: 4vw;
+    padding-top: 40px; /* Added padding to separate from header */
+    }
+
+/* --- New Element Styles --- */
+    .content p {
+    font-size: 3vw;
+    line-height: 1.6;
+    color: var(--secondary-text-color);
+    max-width: 450px; /* Limits the width for readability */
+    }
+
     /* --- Dot Adjustments for Smaller Screens --- */
     .dot {
         filter: blur(40px);
@@ -231,18 +247,18 @@ body {
     }
 
     .dot-light-turquoise {
-        right: -150px;
-        bottom: -150px;
+        left: 0px;
+        bottom: -200px;
     }
 
     .dot-dark-grey {
-        right: -100px;
+        right: 200px;
         bottom: -200px;
     }
 
     .dot-purple {
-        right: -200px;
-        bottom: -100px;
+        right: 0px;
+        bottom: -200px;
     }
 
     .logo img {
