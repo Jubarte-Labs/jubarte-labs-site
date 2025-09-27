@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -12,8 +12,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 @app.route("/")
 def index():
-    """A simple index route."""
-    return "<h1>Client Labs</h1>"
+    """Renders the dashboard page."""
+    return render_template("dashboard.html")
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
