@@ -30,7 +30,9 @@ def index():
 def login():
     """Handles user login."""
     if request.method == "POST":
-        username = request.form["username"]
+import hmac
+# ...
+        if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
         password = request.form["password"]
         if username == os.getenv("APP_USERNAME") and password == os.getenv("APP_PASSWORD"):
             session["logged_in"] = True
