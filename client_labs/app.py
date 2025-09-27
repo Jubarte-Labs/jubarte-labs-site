@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-app = Flask(__name__)
+# Point static folder to the root 'assets' directory
+app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 
 # Configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
