@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Word Count Tool</h1>
+<p>Enter text below to count the number of words.</p>
+
+<form method="post">
+    <textarea name="text_input" rows="10" cols="50" placeholder="Enter text here...">{{ text_input }}</textarea>
+    <br>
+    <button type="submit">Count Words</button>
+</form>
+
+{% if result is not none %}
+<h2>Result</h2>
+<p>The number of words is: {{ result }}</p>
+{% endif %}
+{% endblock %}

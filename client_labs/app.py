@@ -1,7 +1,9 @@
 import os
+import hmac
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
+from .tools import word_count
 
 # Load environment variables from .env file
 load_dotenv()
@@ -30,16 +32,14 @@ def index():
 def login():
     """Handles user login."""
     if request.method == "POST":
-import hmac
-# ...
-        if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
+        username = request.form["username"]
         password = request.form["password"]
-        if username == os.getenv("APP_USERNAME") and password == os.getenv("APP_PASSWORD"):
+        if hmac.compare_digest(username.encode(), os.getenv("APP_USERNAME").encode()) and \
+           hmac.compare_digest(password.encode(), os.getenv("APP_PASSWORD").encode()):
             session["logged_in"] = True
             return redirect(url_for("index"))
-        else:
-            flash("Invalid credentials")
-            return render_template("login.html")
+        flash("Invalid credentials")
+        return render_template("login.html")
     return render_template("login.html")
 
 @app.route("/logout")
@@ -53,6 +53,16 @@ def logout():
 def protected():
     """Renders the protected page."""
     return render_template("protected.html")
+
+@app.route("/tool-1", methods=["GET", "POST"])
+@login_required
+def tool_1():
+    """Renders the tool_1 page and handles form submission."""
+    if request.method == "POST":
+        text = request.form.get("text_input")
+        result = word_count(text)
+        return render_template("tool_1.html", result=result, text_input=text)
+    return render_template("tool_1.html", result=None, text_input="")
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
