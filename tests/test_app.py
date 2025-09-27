@@ -59,3 +59,17 @@ def test_invalid_login(client, monkeypatch):
     assert response.status_code == 200
     assert b"Invalid credentials" in response.data
     assert b"Dashboard" not in response.data
+
+def test_tool_1_get(client):
+    """Test that the tool_1 page loads."""
+    rv = client.get('/tool-1')
+    assert rv.status_code == 200
+    assert b"Word Count Tool" in rv.data
+
+def test_tool_1_post(client):
+    """Test the tool_1 word count functionality."""
+    rv = client.post('/tool-1', data=dict(
+        text_input="This is a test."
+    ), follow_redirects=True)
+    assert rv.status_code == 200
+    assert b"The number of words is: 4" in rv.data
