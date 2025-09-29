@@ -16,6 +16,7 @@
             <div>
                 {% if session.logged_in %}
                     <a href="{{ url_for('tool_1') }}">Word Count</a>
+                    <a href="{{ url_for('logs') }}">Logs</a>
                     <a href="{{ url_for('logout') }}">Logout</a>
                 {% endif %}
             </div>

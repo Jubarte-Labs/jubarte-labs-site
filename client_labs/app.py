@@ -1,4 +1,5 @@
 import os
+import hmac
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_wtf import FlaskForm
@@ -6,6 +7,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 from dotenv import load_dotenv
 from .tools import word_count
+from . import database
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,6 +17,10 @@ app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 
 # Configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+# Initialize database
+with app.app_context():
+    database.init_db()
 
 # --- Forms ---
 class LoginForm(FlaskForm):
@@ -32,25 +38,6 @@ def login_required(f):
     return decorated_function
 
 # --- Routes ---
-@app.route('/login', methods=['GET', 'POST'])
-if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and \
-   hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
-    form = LoginForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        if username == os.getenv("APP_USERNAME") and password == os.getenv("APP_PASSWORD"):
-            session['logged_in'] = True
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid credentials', 'danger')
-    return render_template('login.html', form=form)
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    return redirect(url_for('login'))
-
 @app.route("/")
 @login_required
 def index():
@@ -60,16 +47,18 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Handles user login."""
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        if hmac.compare_digest(username.encode(), os.getenv("APP_USERNAME").encode()) and \
-           hmac.compare_digest(password.encode(), os.getenv("APP_PASSWORD").encode()):
-            session["logged_in"] = True
-            return redirect(url_for("index"))
-        flash("Invalid credentials")
-        return render_template("login.html")
-    return render_template("login.html")
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        # Note: Using hmac.compare_digest for security
+        if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and \
+           hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials', 'danger')
+    return render_template('login.html', form=form)
 
 @app.route("/logout")
 def logout():
@@ -83,12 +72,6 @@ def protected():
     """Renders the protected page."""
     return render_template("protected.html")
 
-@app.route("/protected")
-@login_required
-def protected():
-    """A protected page for testing."""
-    return "<h1>Protected Page</h1>"
-
 @app.route("/tool-1", methods=["GET", "POST"])
 @login_required
 def tool_1():
@@ -96,8 +79,27 @@ def tool_1():
     if request.method == "POST":
         text = request.form.get("text_input")
         result = word_count(text)
+
+        # Log the interaction
+        with database.get_db_connection() as client:
+            client.execute(
+                "INSERT INTO logs (tool_name, input_data, output_data) VALUES (?, ?, ?)",
+                ("word_count", text, str(result))
+            )
+
         return render_template("tool_1.html", result=result, text_input=text)
     return render_template("tool_1.html", result=None, text_input="")
+
+@app.route("/logs")
+@login_required
+def logs():
+    """Displays all logs from the database."""
+    with database.get_db_connection() as client:
+        result_set = client.execute("SELECT * FROM logs ORDER BY timestamp DESC")
+        # Convert rows to a list of dictionaries
+        logs = [dict(zip([d.name for d in result_set.column_descriptions], row)) for row in result_set.rows]
+        columns = [d.name for d in result_set.column_descriptions]
+        logs = [dict(zip(columns, row)) for row in result_set.rows]
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
