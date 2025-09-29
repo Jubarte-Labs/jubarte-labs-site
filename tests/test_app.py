@@ -8,6 +8,11 @@ def client():
         "SECRET_KEY": "test_secret",
         "WTF_CSRF_ENABLED": False
     })
+    app.config.update({
+        "TESTING": True,
+        "SECRET_KEY": "test_secret",
+        "WTF_CSRF_ENABLED": False
+    })
     with app.test_client() as client:
         yield client
 
@@ -18,6 +23,10 @@ def test_unauthenticated_access_redirects_to_login(client):
     assert "login" in response.location
 
     response = client.get("/protected")
+    assert response.status_code == 302
+    assert "login" in response.location
+
+    response = client.get("/tool-1")
     assert response.status_code == 302
     assert "login" in response.location
 
@@ -60,14 +69,20 @@ def test_invalid_login(client, monkeypatch):
     assert b"Invalid credentials" in response.data
     assert b"Dashboard" not in response.data
 
-def test_tool_1_get(client):
-    """Test that the tool_1 page loads."""
+def test_tool_1_authenticated(client, monkeypatch):
+    """Test the word count tool functionality for an authenticated user."""
+    monkeypatch.setenv("APP_USERNAME", "testuser")
+    monkeypatch.setenv("APP_PASSWORD", "testpass")
+
+    # Log in
+    client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
+
+    # Test GET request to the tool page
     rv = client.get('/tool-1')
     assert rv.status_code == 200
     assert b"Word Count Tool" in rv.data
 
-def test_tool_1_post(client):
-    """Test the tool_1 word count functionality."""
+    # Test POST request with word count data
     rv = client.post('/tool-1', data=dict(
         text_input="This is a test."
     ), follow_redirects=True)
