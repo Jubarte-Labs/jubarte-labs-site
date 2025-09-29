@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Application Logs - Client Labs
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Application Logs</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Tool Name</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.tool_name }}</td>
+                    <td><pre>{{ log.input_data }}</pre></td>
+                    <td><pre>{{ log.output_data }}</pre></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
