@@ -33,7 +33,8 @@ def login_required(f):
 
 # --- Routes ---
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and \
+   hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
     form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data
