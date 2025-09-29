@@ -4,4 +4,8 @@ def word_count(text):
     """
     if not text:
         return 0
-    return len(text.split())
+def word_count(text):
+    """
+    Counts the number of words in a given text.
+    """
+    return len(text.split()) if text else 0
