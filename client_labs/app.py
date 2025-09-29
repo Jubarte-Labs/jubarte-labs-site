@@ -1,7 +1,9 @@
 import os
-import hmac
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired
 from dotenv import load_dotenv
 from .tools import word_count
 
@@ -14,6 +16,13 @@ app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 # Configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
+# --- Forms ---
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+# --- Decorators ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -21,6 +30,25 @@ def login_required(f):
             return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated_function
+
+# --- Routes ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        if username == os.getenv("APP_USERNAME") and password == os.getenv("APP_PASSWORD"):
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials', 'danger')
+    return render_template('login.html', form=form)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
 
 @app.route("/")
 @login_required
@@ -53,6 +81,12 @@ def logout():
 def protected():
     """Renders the protected page."""
     return render_template("protected.html")
+
+@app.route("/protected")
+@login_required
+def protected():
+    """A protected page for testing."""
+    return "<h1>Protected Page</h1>"
 
 @app.route("/tool-1", methods=["GET", "POST"])
 @login_required
