@@ -18,7 +18,7 @@ def get_db_connection():
 
     try:
         print("--- [DB] Creating database client...")
-        client = libsql_client.create_client(url=url, auth_token=auth_token)
+        client = libsql_client.create_client_sync(url=url, auth_token=auth_token)
         print("--- [DB] Database client created successfully.")
         return client
     except Exception as e:
