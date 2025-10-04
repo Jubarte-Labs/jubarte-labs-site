@@ -3,4 +3,3 @@ python-dotenv==1.1.1
 libsql-client==0.3.1
 gunicorn==23.0.0
 Flask-WTF==1.2.1
-sitemap-tool @ git+https://${GITHUB_PAT}@github.com/Jubarte-Labs/prj-carpets-sitemap-cleaning.git
