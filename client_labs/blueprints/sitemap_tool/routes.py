@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -27,7 +28,8 @@ def sitemap_processor():
         new_sitemap_filename = request.form.get('new_sitemap_filename')
 
         # 2. Create a unique, secure directory for this job
-        upload_path = os.path.join(current_app.root_path, 'uploads', secure_filename(supplier_dir))
+        job_id = str(uuid.uuid4())
+        upload_path = os.path.join(current_app.root_path, 'uploads', job_id)
         os.makedirs(upload_path, exist_ok=True)
 
         # 3. Save uploaded files
