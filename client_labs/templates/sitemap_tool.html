@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Sitemap Processor</h1>
+<p>Upload your files to process the sitemap.</p>
+
+<form method="post" enctype="multipart/form-data">
+    <div>
+        <label for="supplier_dir">Supplier Directory Name:</label>
+        <input type="text" id="supplier_dir" name="supplier_dir" required>
+    </div>
+    <br>
+    <div>
+        <label for="old_sitemap_file">Old Sitemap File:</label>
+        <input type="file" id="old_sitemap_file" name="old_sitemap_file" required>
+    </div>
+    <br>
+    <div>
+        <label for="empty_pages_file">Empty Pages File:</label>
+        <input type="file" id="empty_pages_file" name="empty_pages_file" required>
+    </div>
+    <br>
+    <div>
+        <label for="new_urls_file">New URLs File (Optional):</label>
+        <input type="file" id="new_urls_file" name="new_urls_file">
+    </div>
+    <br>
+    <div>
+        <label for="new_sitemap_filename">New Sitemap Filename:</label>
+        <input type="text" id="new_sitemap_filename" name="new_sitemap_filename" required>
+    </div>
+    <br>
+    <button type="submit">Process Sitemap</button>
+</form>
+
+{% if result %}
+<h2>Result</h2>
+<pre>{{ result }}</pre>
+{% endif %}
+{% endblock %}
