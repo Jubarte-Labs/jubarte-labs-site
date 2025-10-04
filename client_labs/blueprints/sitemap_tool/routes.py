@@ -3,10 +3,22 @@ import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app
 from functools import wraps
 from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 from ... import database
 from sitemap_tool.main import run_tool_full_process
 
 sitemap_tool_bp = Blueprint('sitemap_tool', __name__, template_folder='templates')
+
+class SitemapToolForm(FlaskForm):
+    supplier_dir = StringField('Supplier Directory Name', validators=[DataRequired()])
+    old_sitemap_file = FileField('Old Sitemap File', validators=[FileRequired(), FileAllowed(['xml'], 'XML files only!')])
+    empty_pages_file = FileField('Empty Pages File', validators=[FileRequired(), FileAllowed(['txt'], 'Text files only!')])
+    new_urls_file = FileField('New URLs File (Optional)', validators=[FileAllowed(['txt'], 'Text files only!')])
+    new_sitemap_filename = StringField('New Sitemap Filename', validators=[DataRequired()])
+    submit = SubmitField('Process Sitemap')
 
 def login_required(f):
     @wraps(f)
@@ -19,13 +31,14 @@ def login_required(f):
 @sitemap_tool_bp.route("/tools/sitemap-processor", methods=["GET", "POST"])
 @login_required
 def sitemap_processor():
-    if request.method == "POST":
+    form = SitemapToolForm()
+    if form.validate_on_submit():
         # 1. Get form data and files
-        supplier_dir = request.form.get('supplier_dir')
-        old_sitemap_file = request.files['old_sitemap_file']
-        empty_pages_file = request.files['empty_pages_file']
-        new_urls_file = request.files.get('new_urls_file') # Optional
-        new_sitemap_filename = request.form.get('new_sitemap_filename')
+        supplier_dir = form.supplier_dir.data
+        old_sitemap_file = form.old_sitemap_file.data
+        empty_pages_file = form.empty_pages_file.data
+        new_urls_file = form.new_urls_file.data
+        new_sitemap_filename = form.new_sitemap_filename.data
 
         # 2. Create a unique, secure directory for this job
         job_id = str(uuid.uuid4())
@@ -53,11 +66,18 @@ def sitemap_processor():
         )
 
         # 5. Log and render result
+        log_input_data = (
+            f"Job ID: {job_id}, "
+            f"Supplier Dir: {supplier_dir}, "
+            f"Old Sitemap: {old_sitemap_filename_s}, "
+            f"Empty Pages: {empty_pages_filename_s}, "
+            f"New URLs: {new_urls_filename_s}"
+        )
         with database.get_db_connection() as client:
             client.execute(
                 "INSERT INTO logs (tool_name, input_data, output_data) VALUES (?, ?, ?)",
-                ("sitemap_processor", f"Directory: {supplier_dir}", result_string)
+                ("sitemap_processor", log_input_data, result_string)
             )
-        return render_template("sitemap_tool.html", result=result_string)
+        return render_template("sitemap_tool.html", form=form, result=result_string)
 
-    return render_template("sitemap_tool.html", result=None)
+    return render_template("sitemap_tool.html", form=form, result=None)
