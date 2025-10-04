@@ -4,32 +4,30 @@
 <p>Upload your files to process the sitemap.</p>
 
 <form method="post" enctype="multipart/form-data">
-    <div>
-        <label for="supplier_dir">Supplier Directory Name:</label>
-        <input type="text" id="supplier_dir" name="supplier_dir" required>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.supplier_dir.label(class="form-label") }}
+        {{ form.supplier_dir(class="form-control") }}
     </div>
-    <br>
-    <div>
-        <label for="old_sitemap_file">Old Sitemap File:</label>
-        <input type="file" id="old_sitemap_file" name="old_sitemap_file" required>
+    <div class="mb-3">
+        {{ form.old_sitemap_file.label(class="form-label") }}
+        {{ form.old_sitemap_file(class="form-control") }}
     </div>
-    <br>
-    <div>
-        <label for="empty_pages_file">Empty Pages File:</label>
-        <input type="file" id="empty_pages_file" name="empty_pages_file" required>
+    <div class="mb-3">
+        {{ form.empty_pages_file.label(class="form-label") }}
+        {{ form.empty_pages_file(class="form-control") }}
     </div>
-    <br>
-    <div>
-        <label for="new_urls_file">New URLs File (Optional):</label>
-        <input type="file" id="new_urls_file" name="new_urls_file">
+    <div class="mb-3">
+        {{ form.new_urls_file.label(class="form-label") }}
+        {{ form.new_urls_file(class="form-control") }}
     </div>
-    <br>
-    <div>
-        <label for="new_sitemap_filename">New Sitemap Filename:</label>
-        <input type="text" id="new_sitemap_filename" name="new_sitemap_filename" required>
+    <div class="mb-3">
+        {{ form.new_sitemap_filename.label(class="form-label") }}
+        {{ form.new_sitemap_filename(class="form-control") }}
     </div>
-    <br>
-    <button type="submit">Process Sitemap</button>
+    <div class="d-grid">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
 </form>
 
 {% if result %}
