@@ -1,21 +1,4 @@
-# Python
+client_labs/uploads/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-
-# Dependencies
-.env
-*.egg-info/
-dist/
-build/
-
-# IDEs
-.idea/
-.vscode/
-
-# Logs
-*.log
+*.db
+jules-scratch/

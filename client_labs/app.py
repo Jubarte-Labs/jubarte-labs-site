@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired
 from dotenv import load_dotenv
 from .tools import word_count
 from . import database
+from .blueprints.sitemap_tool.routes import sitemap_tool_bp
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,10 +18,14 @@ app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 
 # Configuration
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config["WTF_CSRF_ENABLED"] = os.getenv("WTF_CSRF_ENABLED", "True").lower() in ['true', '1', 't']
 
 # Initialize database
 with app.app_context():
     database.init_db()
+
+# Register blueprints
+app.register_blueprint(sitemap_tool_bp)
 
 # --- Forms ---
 class LoginForm(FlaskForm):
