@@ -6,8 +6,8 @@ def get_db_connection():
     url = os.getenv("TURSO_DATABASE_URL")
     auth_token = os.getenv("TURSO_AUTH_TOKEN")
     if not url:
-    url = os.getenv("TURSO_DATABASE_URL")
-    auth_token = os.getenv("TURSO_AUTH_TOKEN")
+        url = os.getenv("TURSO_DATABASE_URL")
+        auth_token = os.getenv("TURSO_AUTH_TOKEN")
     if not url or not auth_token:
         raise ValueError("TURSO_DATABASE_URL and TURSO_AUTH_TOKEN environment variables must be set")
     return libsql_client.create_client_sync(url=url, auth_token=auth_token)
