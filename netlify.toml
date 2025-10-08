@@ -4,7 +4,7 @@
 [build]
   # We have no build step for our simple HTML/CSS site.
   # This command does nothing and prevents Netlify from auto-detecting Python.
-  command = "echo 'No build command needed for static site'"
+  command = "rm requirements.txt && echo 'No build command needed for static site'"
 
   # The directory to publish, which contains our index.html.
   publish = "."
