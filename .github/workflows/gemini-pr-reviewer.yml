@@ -69,7 +69,7 @@ jobs:
         if: |-
           ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: '${{ secrets.REVIEWER_PAT }}'
           EVENT_NAME: '${{ github.event_name }}'
           WORKFLOW_PR_NUMBER: '${{ github.event.inputs.pr_number }}'
           PULL_REQUEST_NUMBER: '${{ github.event.pull_request.number }}'
