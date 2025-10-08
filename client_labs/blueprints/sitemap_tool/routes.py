@@ -13,7 +13,7 @@ from sitemap_tool.main import run_tool_full_process
 sitemap_tool_bp = Blueprint('sitemap_tool', __name__, template_folder='templates')
 
 class SitemapToolForm(FlaskForm):
-    supplier_dir = StringField('Supplier Directory Name', validators=[DataRequired()])
+    job_name = StringField('Job Name', validators=[DataRequired()])
     old_sitemap_file = FileField('Old Sitemap File', validators=[FileRequired(), FileAllowed(['xml'], 'XML files only!')])
     empty_pages_file = FileField('Empty Pages File', validators=[FileRequired(), FileAllowed(['txt'], 'Text files only!')])
     new_urls_file = FileField('New URLs File (Optional)', validators=[FileAllowed(['txt'], 'Text files only!')])
@@ -34,7 +34,7 @@ def sitemap_processor():
     form = SitemapToolForm()
     if form.validate_on_submit():
         # 1. Get form data and files
-        supplier_dir = form.supplier_dir.data
+        job_name = form.job_name.data
         old_sitemap_file = form.old_sitemap_file.data
         empty_pages_file = form.empty_pages_file.data
         new_urls_file = form.new_urls_file.data
@@ -68,7 +68,7 @@ def sitemap_processor():
         # 5. Log and render result
         log_input_data = (
             f"Job ID: {job_id}, "
-            f"Supplier Dir: {supplier_dir}, "
+            f"Job Name: {job_name}, "
             f"Old Sitemap: {old_sitemap_filename_s}, "
             f"Empty Pages: {empty_pages_filename_s}, "
             f"New URLs: {new_urls_filename_s}"
