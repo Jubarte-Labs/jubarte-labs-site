@@ -98,8 +98,7 @@ def logs():
         result_set = client.execute("SELECT * FROM logs ORDER BY timestamp DESC")
         # Convert rows to a list of dictionaries
         logs = [dict(zip([d.name for d in result_set.column_descriptions], row)) for row in result_set.rows]
-        columns = [d.name for d in result_set.column_descriptions]
-        logs = [dict(zip(columns, row)) for row in result_set.rows]
+    return render_template("logs.html", logs=logs)
 
 if __name__ == "__main__":
     app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
