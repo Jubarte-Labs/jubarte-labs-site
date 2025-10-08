@@ -1,4 +1,11 @@
 import os
+
+print("--- STARTING APP ---")
+print(f"DEBUG: TURSO_DATABASE_URL is set to: {os.getenv('TURSO_DATABASE_URL')}")
+# For security, we just check if the token exists, not its value.
+print(f"DEBUG: TURSO_AUTH_TOKEN is set: {'Yes' if os.getenv('TURSO_AUTH_TOKEN') else 'No, this is the problem!'}")
+print("--------------------")
+
 import hmac
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
