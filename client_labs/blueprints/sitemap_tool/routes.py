@@ -57,13 +57,16 @@ def sitemap_processor():
             new_urls_file.save(os.path.join(upload_path, new_urls_filename_s))
 
         # 4. Call the tool's main function
-        result_string = run_tool_full_process(
-            supplier_dir_absolute=upload_path,
-            old_sitemap_filename=old_sitemap_filename_s,
-            empty_pages_filename=empty_pages_filename_s,
-            new_sitemap_filename=secure_filename(new_sitemap_filename),
-            new_urls_filename=new_urls_filename_s
-        )
+        try:
+            result_string = run_tool_full_process(
+                supplier_dir_absolute=upload_path,
+                old_sitemap_filename=old_sitemap_filename_s,
+                empty_pages_filename=empty_pages_filename_s,
+                new_sitemap_filename=secure_filename(new_sitemap_filename),
+                new_urls_filename=new_urls_filename_s
+            )
+        except Exception as e:
+            result_string = f"Tool execution failed: {e}"
 
         # 5. Log and render result
         log_input_data = (
