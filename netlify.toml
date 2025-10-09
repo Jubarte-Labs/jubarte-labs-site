@@ -2,10 +2,5 @@
 # This tells Netlify how to build and deploy the static marketing site.
 
 [build]
-  # WORKAROUND: Netlify auto-detects Python and attempts to install dependencies,
-  # which fails due to unexpanded environment variables in requirements.txt.
-  # This command removes the file before the dependency installation stage.
-  command = "rm requirements.txt && echo 'No build command needed for static site'"
-
-  # The directory to publish, which contains our index.html.
+  command = "npm run build"
   publish = "."

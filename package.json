@@ -1,0 +1,7 @@
+{
+  "name": "jubarte-labs-static",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'No build needed for static site'"
+  }
+}
