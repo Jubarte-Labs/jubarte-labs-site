@@ -13,6 +13,11 @@ def get_db_connection():
 
     # Handle local file-based database for testing/local dev
     if db_url.startswith("file:"):
+        # Security check: Prevent path traversal attacks by checking for '..'
+        file_path = db_url[5:]  # Remove 'file:' prefix
+        if ".." in file_path:
+            raise ValueError("Path traversal attempt detected in TURSO_DATABASE_URL")
+        
         return libsql_client.create_client_sync(url=db_url)
 
     # Handle remote Turso database

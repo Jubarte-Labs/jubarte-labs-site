@@ -1,4 +1,4 @@
-.PHONY: install test
+.PHONY: install test format lint typecheck
 
 install:
 	pip install --upgrade pip
@@ -6,3 +6,13 @@ install:
 
 test: install
 	PYTHONPATH=. python -m pytest
+
+format: install
+	black .
+	isort .
+
+lint: install
+	ruff check .
+
+typecheck: install
+	mypy .

@@ -6,3 +6,7 @@ Flask-WTF==1.2.1
 rich
 sitemap_tool
 pytest
+black
+isort
+ruff
+mypy
