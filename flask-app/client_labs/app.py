@@ -15,9 +15,10 @@ app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 # Configuration
 app.config.from_object('config.DevelopmentConfig')
 
-# Initialize database
-with app.app_context():
-    database.init_db()
+def setup_app(app):
+    # Initialize database
+    with app.app_context():
+        database.init_db()
 
 # Register blueprints
 app.register_blueprint(sitemap_tool_bp)
@@ -102,4 +103,5 @@ def logs():
         logs = [dict(zip(columns, row)) for row in result_set.rows]
 
 if __name__ == "__main__":
+    setup_app(app)
     app.run(debug=app.config['DEBUG'])

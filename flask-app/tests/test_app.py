@@ -1,8 +1,24 @@
 import pytest
 from client_labs.app import app
 
+# Mock class for the database connection
+class MockDBClient:
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+    def execute(self, *args, **kwargs):
+        # Mock the execute call to do nothing
+        pass
+
+def mock_get_db_connection():
+    return MockDBClient()
+
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    # MOCK THE DATABASE CONNECTION
+    monkeypatch.setattr('client_labs.database.get_db_connection', mock_get_db_connection)
+    
     app.config.update({
         "TESTING": True,
         "SECRET_KEY": "test_secret",
