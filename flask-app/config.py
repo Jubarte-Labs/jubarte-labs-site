@@ -5,7 +5,7 @@ load_dotenv()
 
 class Config:
     """Base configuration class."""
-    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'you-will-never-guess'
+    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
     WTF_CSRF_ENABLED = os.environ.get('WTF_CSRF_ENABLED', 'True').lower() in ['true', '1', 't']
     APP_USERNAME = os.environ.get('APP_USERNAME')
     APP_PASSWORD = os.environ.get('APP_PASSWORD')
