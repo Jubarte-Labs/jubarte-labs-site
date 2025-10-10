@@ -1,20 +1,20 @@
 import pytest
-from client_labs.app import app
+from client_labs.app import create_app
 
 @pytest.fixture
-def client():
+def app(monkeypatch):
+    monkeypatch.setenv("TURSO_DATABASE_URL", "file:test.db")
+    monkeypatch.setenv("FLASK_SECRET_KEY", "test_secret")
+    app = create_app()
     app.config.update({
         "TESTING": True,
-        "SECRET_KEY": "test_secret",
-        "WTF_CSRF_ENABLED": False
+        "WTF_CSRF_ENABLED": False,
     })
-    app.config.update({
-        "TESTING": True,
-        "SECRET_KEY": "test_secret",
-        "WTF_CSRF_ENABLED": False
-    })
-    with app.test_client() as client:
-        yield client
+    yield app
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
 
 def test_unauthenticated_access_redirects_to_login(client):
     """Test that accessing protected pages redirects unauthenticated users to the login page."""
