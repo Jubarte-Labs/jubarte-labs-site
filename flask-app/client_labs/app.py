@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 print("--- STARTING APP ---")
 print(f"DEBUG: TURSO_DATABASE_URL is set to: {os.getenv('TURSO_DATABASE_URL')}")
@@ -12,13 +16,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
-from dotenv import load_dotenv
 from .tools import word_count
 from . import database
 from .blueprints.sitemap_tool.routes import sitemap_tool_bp
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Point static folder to the root 'assets' directory
 app = Flask(__name__, static_folder='../assets', static_url_path='/assets')

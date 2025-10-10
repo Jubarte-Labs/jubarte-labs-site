@@ -88,3 +88,16 @@ def test_tool_1_authenticated(client, monkeypatch):
     ), follow_redirects=True)
     assert rv.status_code == 200
     assert b"The number of words is: 4" in rv.data
+
+def test_sitemap_tool_access(client, monkeypatch):
+    """Test that the sitemap tool page is accessible to an authenticated user."""
+    monkeypatch.setenv("APP_USERNAME", "testuser")
+    monkeypatch.setenv("APP_PASSWORD", "testpass")
+
+    # Log in
+    client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
+
+    # Test GET request to the sitemap tool page
+    rv = client.get('/tools/sitemap-processor')
+    assert rv.status_code == 200
+    assert b"Sitemap Processor" in rv.data
