@@ -6,7 +6,9 @@ def client():
     app.config.update({
         "TESTING": True,
         "SECRET_KEY": "test_secret",
-        "WTF_CSRF_ENABLED": False
+        "WTF_CSRF_ENABLED": False,
+        "APP_USERNAME": "testuser",
+        "APP_PASSWORD": "testpass"
     })
     with app.test_client() as client:
         yield client
@@ -27,8 +29,6 @@ def test_unauthenticated_access_redirects_to_login(client):
 
 def test_login_and_logout(client):
     """Test the complete login and logout flow."""
-    app.config["APP_USERNAME"] = "testuser"
-    app.config["APP_PASSWORD"] = "testpass"
 
     # Test successful login and redirection
     response = client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
@@ -56,8 +56,6 @@ def test_login_and_logout(client):
 
 def test_invalid_login(client):
     """Test that invalid login credentials display an error message."""
-    app.config["APP_USERNAME"] = "testuser"
-    app.config["APP_PASSWORD"] = "testpass"
 
     response = client.post("/login", data={"username": "wronguser", "password": "wrongpassword"}, follow_redirects=True)
     assert response.status_code == 200
@@ -66,8 +64,6 @@ def test_invalid_login(client):
 
 def test_tool_1_authenticated(client):
     """Test the word count tool functionality for an authenticated user."""
-    app.config["APP_USERNAME"] = "testuser"
-    app.config["APP_PASSWORD"] = "testpass"
 
     # Log in
     client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
@@ -86,8 +82,6 @@ def test_tool_1_authenticated(client):
 
 def test_sitemap_tool_access(client):
     """Test that the sitemap tool page is accessible to an authenticated user."""
-    app.config["APP_USERNAME"] = "testuser"
-    app.config["APP_PASSWORD"] = "testpass"
 
     # Log in
     client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
