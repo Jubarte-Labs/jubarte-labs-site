@@ -1,17 +1,30 @@
 import pytest
 from client_labs.app import app
 
+# Mock class for the database connection
+class MockDBClient:
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+    def execute(self, *args, **kwargs):
+        # Mock the execute call to do nothing
+        pass
+
+def mock_get_db_connection():
+    return MockDBClient()
+
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    # MOCK THE DATABASE CONNECTION
+    monkeypatch.setattr('client_labs.database.get_db_connection', mock_get_db_connection)
+    
     app.config.update({
         "TESTING": True,
         "SECRET_KEY": "test_secret",
-        "WTF_CSRF_ENABLED": False
-    })
-    app.config.update({
-        "TESTING": True,
-        "SECRET_KEY": "test_secret",
-        "WTF_CSRF_ENABLED": False
+        "WTF_CSRF_ENABLED": False,
+        "APP_USERNAME": "testuser",
+        "APP_PASSWORD": "testpass"
     })
     with app.test_client() as client:
         yield client
@@ -30,10 +43,8 @@ def test_unauthenticated_access_redirects_to_login(client):
     assert response.status_code == 302
     assert "login" in response.location
 
-def test_login_and_logout(client, monkeypatch):
+def test_login_and_logout(client):
     """Test the complete login and logout flow."""
-    monkeypatch.setenv("APP_USERNAME", "testuser")
-    monkeypatch.setenv("APP_PASSWORD", "testpass")
 
     # Test successful login and redirection
     response = client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
@@ -59,20 +70,16 @@ def test_login_and_logout(client, monkeypatch):
     assert response.status_code == 302
     assert "login" in response.location
 
-def test_invalid_login(client, monkeypatch):
+def test_invalid_login(client):
     """Test that invalid login credentials display an error message."""
-    monkeypatch.setenv("APP_USERNAME", "testuser")
-    monkeypatch.setenv("APP_PASSWORD", "testpass")
 
     response = client.post("/login", data={"username": "wronguser", "password": "wrongpassword"}, follow_redirects=True)
     assert response.status_code == 200
     assert b"Invalid credentials" in response.data
     assert b"Dashboard" not in response.data
 
-def test_tool_1_authenticated(client, monkeypatch):
+def test_tool_1_authenticated(client):
     """Test the word count tool functionality for an authenticated user."""
-    monkeypatch.setenv("APP_USERNAME", "testuser")
-    monkeypatch.setenv("APP_PASSWORD", "testpass")
 
     # Log in
     client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
@@ -89,10 +96,8 @@ def test_tool_1_authenticated(client, monkeypatch):
     assert rv.status_code == 200
     assert b"The number of words is: 4" in rv.data
 
-def test_sitemap_tool_access(client, monkeypatch):
+def test_sitemap_tool_access(client):
     """Test that the sitemap tool page is accessible to an authenticated user."""
-    monkeypatch.setenv("APP_USERNAME", "testuser")
-    monkeypatch.setenv("APP_PASSWORD", "testpass")
 
     # Log in
     client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
