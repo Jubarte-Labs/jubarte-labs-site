@@ -1,104 +1,109 @@
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-print("--- STARTING APP ---")
-print(f"DEBUG: TURSO_DATABASE_URL is set to: {os.getenv('TURSO_DATABASE_URL')}")
-# For security, we just check if the token exists, not its value.
-print(f"DEBUG: TURSO_AUTH_TOKEN is set: {'Yes' if os.getenv('TURSO_AUTH_TOKEN') else 'No, this is the problem!'}")
-print("--------------------")
-
 import hmac
+from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired
 from .tools import word_count
 from . import database
 from .blueprints.sitemap_tool.routes import sitemap_tool_bp
-from .auth import login_required, LoginForm
 
-def create_app():
-    # Point static folder to the root 'assets' directory
-    app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
+# Point static folder to the root 'assets' directory
+app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
 
-    # Configuration
-    app.secret_key = os.getenv("FLASK_SECRET_KEY")
-    app.config["WTF_CSRF_ENABLED"] = os.getenv("WTF_CSRF_ENABLED", "True").lower() in ['true', '1', 't']
+# Configuration
+app.config.from_object('config.DevelopmentConfig')
 
+def setup_app(app):
     # Initialize database
     with app.app_context():
         database.init_db()
 
-    # Register blueprints
-    app.register_blueprint(sitemap_tool_bp)
+# Register blueprints
+app.register_blueprint(sitemap_tool_bp)
 
-    # --- Routes ---
-    @app.route("/")
-    @login_required
-    def index():
-        """Renders the dashboard page."""
-        return render_template("dashboard.html")
+# --- Forms ---
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
 
-    @app.route("/login", methods=["GET", "POST"])
-    def login():
-        """Handles user login."""
-        form = LoginForm()
-        if form.validate_on_submit():
-            username = form.username.data
-            password = form.password.data
-            # Note: Using hmac.compare_digest for security
-            if hmac.compare_digest(username, os.getenv("APP_USERNAME")) and \
-               hmac.compare_digest(password, os.getenv("APP_PASSWORD")):
-                session['logged_in'] = True
-                return redirect(url_for('index'))
-            else:
-                flash('Invalid credentials', 'danger')
-        return render_template('login.html', form=form)
+# --- Decorators ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
-    @app.route("/logout")
-    def logout():
-        """Logs the user out."""
-        session.pop("logged_in", None)
-        return redirect(url_for("login"))
+# --- Routes ---
+@app.route("/")
+@login_required
+def index():
+    """Renders the dashboard page."""
+    return render_template("dashboard.html")
 
-    @app.route("/protected")
-    @login_required
-    def protected():
-        """Renders the protected page."""
-        return render_template("protected.html")
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Handles user login."""
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        # Note: Using hmac.compare_digest for security
+        if hmac.compare_digest(username, app.config["APP_USERNAME"]) and \
+           hmac.compare_digest(password, app.config["APP_PASSWORD"]):
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials', 'danger')
+    return render_template('login.html', form=form)
 
-    @app.route("/tool-1", methods=["GET", "POST"])
-    @login_required
-    def tool_1():
-        """Renders the tool_1 page and handles form submission."""
-        if request.method == "POST":
-            text = request.form.get("text_input")
-            result = word_count(text)
+@app.route("/logout")
+def logout():
+    """Logs the user out."""
+    session.pop("logged_in", None)
+    return redirect(url_for("login"))
 
-            # Log the interaction
-            with database.get_db_connection() as client:
-                client.execute(
-                    "INSERT INTO logs (tool_name, input_data, output_data) VALUES (?, ?, ?)",
-                    ("word_count", text, str(result))
-                )
+@app.route("/protected")
+@login_required
+def protected():
+    """Renders the protected page."""
+    return render_template("protected.html")
 
-            return render_template("tool_1.html", result=result, text_input=text)
-        return render_template("tool_1.html", result=None, text_input="")
+@app.route("/tool-1", methods=["GET", "POST"])
+@login_required
+def tool_1():
+    """Renders the tool_1 page and handles form submission."""
+    if request.method == "POST":
+        text = request.form.get("text_input")
+        result = word_count(text)
 
-    @app.route("/logs")
-    @login_required
-    def logs():
-        """Displays all logs from the database."""
+        # Log the interaction
         with database.get_db_connection() as client:
-            result_set = client.execute("SELECT * FROM logs ORDER BY timestamp DESC")
-            # Convert rows to a list of dictionaries
-            columns = [d.name for d in result_set.column_descriptions]
-            logs = [dict(zip(columns, row)) for row in result_set.rows]
+            client.execute(
+                "INSERT INTO logs (tool_name, input_data, output_data) VALUES (?, ?, ?)",
+                ("word_count", text, str(result))
+            )
 
-        return render_template("logs.html", logs=logs, columns=columns)
+        return render_template("tool_1.html", result=result, text_input=text)
+    return render_template("tool_1.html", result=None, text_input="")
 
-    return app
+@app.route("/logs")
+@login_required
+def logs():
+    """Displays all logs from the database."""
+    with database.get_db_connection() as client:
+        result_set = client.execute("SELECT * FROM logs ORDER BY timestamp DESC")
+        # Convert rows to a list of dictionaries
+        logs = [dict(zip([d.name for d in result_set.column_descriptions], row)) for row in result_set.rows]
+        columns = [d.name for d in result_set.column_descriptions]
+        logs = [dict(zip(columns, row)) for row in result_set.rows]
+
+    return render_template("logs.html", logs=logs)
 
 if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
+    setup_app(app)
+    app.run(debug=app.config['DEBUG'])
