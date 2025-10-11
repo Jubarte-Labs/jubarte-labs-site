@@ -8,6 +8,7 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from ... import database
+from ...app import login_required # Import from app.py
 from sitemap_tool.main import run_tool_full_process
 
 sitemap_tool_bp = Blueprint('sitemap_tool', __name__, template_folder='templates')
@@ -19,14 +20,6 @@ class SitemapToolForm(FlaskForm):
     new_urls_file = FileField('New URLs File (Optional)', validators=[FileAllowed(['txt'], 'Text files only!')])
     new_sitemap_filename = StringField('New Sitemap Filename', validators=[DataRequired()])
     submit = SubmitField('Process Sitemap')
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("logged_in"):
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
 
 @sitemap_tool_bp.route("/tools/sitemap-processor", methods=["GET", "POST"])
 @login_required
