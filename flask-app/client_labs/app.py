@@ -10,7 +10,7 @@ from . import database
 from .blueprints.sitemap_tool.routes import sitemap_tool_bp
 
 # Point static folder to the root 'assets' directory
-app = Flask(__name__, static_folder='../assets', static_url_path='/assets')
+app = Flask(__name__, static_folder='../../main-site/assets', static_url_path='/assets')
 
 # Configuration
 app.config.from_object('config.DevelopmentConfig')
