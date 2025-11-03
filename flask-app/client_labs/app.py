@@ -1,11 +1,13 @@
 import os
 import hmac
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from .auth import LoginForm, login_required
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g
+from .auth import login_required, RegistrationForm, LoginForm
 from .tools import word_count
+from werkzeug.security import generate_password_hash, check_password_hash
 from . import database
 from .blueprints.sitemap_tool.routes import sitemap_tool_bp
+from authlib.integrations.flask_client import OAuth
 
 # Point static folder to the root 'assets' directory
 import os
@@ -18,6 +20,19 @@ app = Flask(__name__, static_folder=static_folder_path, static_url_path='/assets
 
 # Configuration
 app.config.from_object('config.DevelopmentConfig')
+oauth = OAuth(app)
+oauth.register(
+    name='google',
+    client_id=app.config.get('GOOGLE_CLIENT_ID'),
+    client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_params=None,
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    authorize_params=None,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    client_kwargs={'scope': 'openid email profile'},
+)
 
 def setup_app(app):
     # Initialize database
@@ -27,6 +42,20 @@ def setup_app(app):
 # Register blueprints
 app.register_blueprint(sitemap_tool_bp)
 
+@app.before_request
+def load_logged_in_user():
+    """If a user id is in the session, load the user object from
+    the database into g.user."""
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        g.user = None
+    else:
+        with database.get_db_connection() as client:
+            result_set = client.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+            user = result_set.rows[0] if result_set.rows else None
+            g.user = dict(zip(result_set.columns, user)) if user else None
+
 # --- Routes ---
 @app.route("/")
 @login_required
@@ -34,26 +63,89 @@ def index():
     """Renders the dashboard page."""
     return render_template("dashboard.html")
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=['GET', 'POST'])
 def login():
     """Handles user login."""
     form = LoginForm()
     if form.validate_on_submit():
-        username = form.username.data
+        email = form.email.data
         password = form.password.data
-        # Note: Using hmac.compare_digest for security
-        if hmac.compare_digest(username, app.config["APP_USERNAME"]) and \
-           hmac.compare_digest(password, app.config["APP_PASSWORD"]):
-            session['logged_in'] = True
+
+        with database.get_db_connection() as client:
+            result_set = client.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = result_set.rows[0] if result_set.rows else None
+
+        if user and user[4] and check_password_hash(user[4], password):
+            session['user_id'] = user[0]
             return redirect(url_for('index'))
         else:
-            flash('Invalid credentials', 'danger')
+            flash('Invalid email or password')
+            return redirect(url_for('login'))
+
     return render_template('login.html', form=form)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Handles user registration."""
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+
+        with database.get_db_connection() as client:
+            result_set = client.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = result_set.rows[0] if result_set.rows else None
+
+            if user:
+                flash('Email address already exists')
+                return redirect(url_for('register'))
+
+            client.execute(
+                "INSERT INTO users (email, password_hash) VALUES (?, ?)",
+                (email, generate_password_hash(password))
+            )
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html', form=form)
+
+@app.route('/login/google')
+def google_login():
+    """Redirects to Google's authorization page."""
+    redirect_uri = url_for('google_authorize', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@app.route('/login/google/callback')
+def google_authorize():
+    """Handles the callback from Google."""
+    token = oauth.google.authorize_access_token()
+    user_info = oauth.google.parse_id_token(token)
+
+    google_id = user_info['sub']
+    email = user_info['email']
+    name = user_info.get('name')
+
+    with database.get_db_connection() as client:
+        result_set = client.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
+        user = result_set.rows[0] if result_set.rows else None
+
+        if user is None:
+            client.execute(
+                "INSERT INTO users (google_id, email, name) VALUES (?, ?, ?)",
+                (google_id, email, name)
+            )
+            result_set = client.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
+            user = result_set.rows[0] if result_set.rows else None
+
+    # Store the user's ID in the session
+    session['user_id'] = user[0] # The user's ID is the first column
+
+    return redirect(url_for('index'))
 
 @app.route("/logout")
 def logout():
     """Logs the user out."""
-    session.pop("logged_in", None)
+    session.pop("user_id", None)
     return redirect(url_for("login"))
 
 @app.route("/protected")

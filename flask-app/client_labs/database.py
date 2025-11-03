@@ -49,6 +49,16 @@ def init_db():
                 output_data TEXT
             )
         """)
+        client.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                google_id TEXT UNIQUE,
+                email TEXT NOT NULL UNIQUE,
+                name TEXT,
+                password_hash TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
     except Exception as e:
         raise
     finally:
