@@ -1,36 +1,44 @@
 import os
 import hmac
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, Blueprint
 from .auth import login_required, RegistrationForm, LoginForm
 from .tools import word_count
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import database
+from .database import init_db_command
 from .blueprints.sitemap_tool.routes import sitemap_tool_bp
 from authlib.integrations.flask_client import OAuth
 
-# Point static folder to the root 'assets' directory
-import os
+app = Flask(__name__)
+app.cli.add_command(init_db_command)
 
-# Get the absolute path of the project root
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-static_folder_path = os.path.join(project_root, 'main-site', 'assets')
+# --- Blueprints --- 
 
-app = Flask(__name__, static_folder=static_folder_path, static_url_path='/assets')
+# Blueprint for client-specific static files (CSS)
+client_labs_bp = Blueprint('client_labs', __name__,
+                           static_folder='static', static_url_path='/client_labs/static')
+app.register_blueprint(client_labs_bp)
 
-# Configuration
+# Blueprint for shared, main-site assets (logo, main CSS)
+main_assets_bp = Blueprint('main_assets', __name__, 
+                           static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'main-site', 'assets')),
+                           static_url_path='/assets')
+app.register_blueprint(main_assets_bp)
+
+# Register other functional blueprints
+app.register_blueprint(sitemap_tool_bp)
+
+
+# --- App Configuration ---
+
 app.config.from_object('config.DevelopmentConfig')
 oauth = OAuth(app)
 oauth.register(
     name='google',
     client_id=app.config.get('GOOGLE_CLIENT_ID'),
     client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    access_token_params=None,
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    authorize_params=None,
-    api_base_url='https://www.googleapis.com/oauth2/v1/',
-    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile'},
 )
 
@@ -38,9 +46,6 @@ def setup_app(app):
     # Initialize database
     with app.app_context():
         database.init_db()
-
-# Register blueprints
-app.register_blueprint(sitemap_tool_bp)
 
 @app.before_request
 def load_logged_in_user():
@@ -119,7 +124,7 @@ def google_login():
 def google_authorize():
     """Handles the callback from Google."""
     token = oauth.google.authorize_access_token()
-    user_info = oauth.google.parse_id_token(token)
+    user_info = oauth.google.parse_id_token(token, nonce=session.get('nonce'))
 
     google_id = user_info['sub']
     email = user_info['email']
