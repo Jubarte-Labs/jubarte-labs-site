@@ -37,9 +37,6 @@ permissions:
 
 jobs:
   review-pr:
-    # This condition seeks to ensure the action is only run when it is triggered by a trusted user.
-    # For private repos, users who have access to the repo are considered trusted.
-    # For public repos, users who members, owners, or collaborators are considered trusted.
     if: |-
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'pull_request' ||
@@ -102,7 +99,6 @@ jobs:
         if: |-
           ${{ github.event_name == 'issue_comment' || github.event_name == 'pull_request_review' || github.event_name == 'pull_request_review_comment' }}
         env:
-          # Use the PAT here for consistency, as it needs write permissions
           GITHUB_TOKEN: '${{ secrets.REVIEWER_PAT }}'
           COMMENT_BODY: '${{ github.event.comment.body || github.event.review.body }}'
           PR_NUMBER: '${{ github.event.issue.number || github.event.pull_request.number }}'
@@ -140,10 +136,7 @@ jobs:
           ADDITIONAL_INSTRUCTIONS: '${{ steps.get_pr.outputs.additional_instructions || steps.get_pr_comment.outputs.additional_instructions }}'
           REPOSITORY: '${{ github.repository }}'
         with:
-          # --- CHANGE #1: ADDED FOR DEBUGGING ---
-          # This will save the model's stdout.log and stderr.log as artifacts
-          # so you can see *what* the model responded with if it fails again.
-          upload_artifacts: true
+          upload_artifacts: true # This is working, keep it
           gemini_api_key: '${{ secrets.ACTIONS_GEMINI_API_KEY }}'
           settings: |-
             {
@@ -188,15 +181,22 @@ jobs:
             ## Role & Goal
             You are an expert code reviewer. Your goal is to perform a thorough code review and post all feedback directly to the GitHub Pull Request using the available tools. Use the tools to gather information; do not ask for it.
 
+            ## Available Tools
+            You have two types of tools:
+            1.  **Shell Commands:** Use `run_shell_command(command_string)` to run commands like `echo`, `gh pr diff`, `cat`, etc.
+            2.  **GitHub Review Tools:** Use the native tools `mcp__github__create_pending_pull_request_review`, `mcp__github__add_comment_to_pending_review`, and `mcp__github__submit_pending_pull_request_review`.
+            
+            **CRITICAL:** DO NOT wrap the GitHub Review Tools inside `run_shell_command`. They are separate, native tools.
+
             ## Review Process
-            1.  **Gather Context:** Run these initial commands:
-                - `echo "${REPOSITORY}"`
-                - `echo "${PR_NUMBER}"`
-                - `echo "${PR_DATA}"`
-                - `echo "${ADDITIONAL_INSTRUCTIONS}"` (Prioritize any instructions found here).
-            2.  **Get Code Changes:** Run `gh pr diff "${PR_NUMBER}" --patch` to get the full diff. This is your primary source for the review.
+            1.  **Gather Context:** Run these commands using `run_shell_command`:
+                - `run_shell_command(echo "${REPOSITORY}")`
+                - `run_shell_command(echo "${PR_NUMBER}")`
+                - `run_shell_command(echo "${PR_DATA}")`
+                - `run_shell_command(echo "${ADDITIONAL_INSTRUCTIONS}")` (Prioritize any instructions found here).
+            2.  **Get Code Changes:** Run `run_shell_command(gh pr diff "${PR_NUMBER}" --patch)` to get the full diff. This is your primary source for the review.
             3.  **Analyze & Review:** Based on the guidelines below, analyze the code diff for issues.
-            4.  **Post to GitHub:** Use the tool-calling instructions at the end to post your complete review. All feedback MUST be posted to GitHub.
+            4.  **Post to GitHub:** Use the **native GitHub Review Tools** (see instructions below) to post your complete review. All feedback MUST be posted to GitHub.
 
             ## Core Review Guidelines
             * **CRITICAL CONSTRAINT:** You MUST only comment on lines that were changed in the diff (lines starting with `+` or `-`). Commenting on unchanged context lines will cause an error.
@@ -225,10 +225,10 @@ jobs:
             </COMMENT>
             ```
 
-            ## Posting Instructions (Tool Usage)
-            1.  **Start Review:** Call `mcp__github__create_pending_pull_request_review` to begin.
-            2.  **Add Inline Comments:** For each issue you find, call `mcp__github__add_comment_to_pending_review`. Use the format described above.
-            3.  **Submit Review:** Finally, call `mcp__github__submit_pending_pull_request_review`. Provide a brief, high-level summary in the `body` parameter.
+            ## Posting Instructions (Native Tool Usage)
+            1.  **Start Review:** Call the native tool `mcp__github__create_pending_pull_request_review` to begin.
+            2.  **Add Inline Comments:** For each issue, call the native tool `mcp__github__add_comment_to_pending_review`.
+            3.  **Submit Review:** Finally, call the native tool `mcp__github__submit_pending_pull_request_review`. Provide a brief, high-level summary in the `body` parameter.
 
             **Summary Format:**
             ```markdown
@@ -240,37 +240,36 @@ jobs:
             - High-level observations or patterns.
             - Positive aspects of the implementation.
             ```
+            
+            ## Final Instruction
+            You MUST start your response *only* by calling the `mcp__github__create_pending_pull_request_review` tool. Do not provide any other text, explanation, or preamble before this first tool call. Do not wrap it in `run_shell_command`.
 
-      # --- CHANGE #2: ADDED NEW STEP TO DETECT SILENT FAILURE ---
-      # This step checks if the model *actually* tried to call the GitHub tools.
-      # If it only returned text, this step will fail, which will trigger
-      # the 'Post PR review failure comment' step below.
+      # --- THIS STEP IS NOW FIXED ---
+      # It now reads the log files from disk instead of relying on
+      # the broken step outputs.
       - name: 'Check for Silent Failure (No Tool Calls)'
-        # This step now checks both stdout and stderr for the tool call
         if: ${{ steps.gemini_pr_review.outcome == 'success' }}
-        env:
-          # Combine both stdout and stderr. The tool calls are likely in stderr.
-          FULL_GEMINI_OUTPUT: "${{ steps.gemini_pr_review.outputs.gemini_response }}${{ steps.gemini_pr_review.outputs.gemini_errors }}"
         run: |
           set -euo pipefail
-          echo "Checking for expected tool calls in combined Gemini output..."
+          echo "Checking for expected tool calls in artifact log files..."
           
-          # Check if the *combined* output contains any of the required GitHub tool calls
-          if ! (echo "${FULL_GEMINI_OUTPUT}" | grep -q "mcp__github__create_pending_pull_request_review") && \
-             ! (echo "${FULL_GEMINI_OUTPUT}" | grep -q "mcp__github__submit_pending_pull_request_review"); then
+          # Combine the content of both log files from the artifacts directory
+          # The 'run-gemini-cli' action creates these files [cite: 84]
+          FULL_LOG_OUTPUT=$(cat gemini-artifacts/stdout.log gemini-artifacts/stderr.log)
+          
+          # Check if the *combined* log output contains any of the required GitHub tool calls
+          if ! (echo "${FULL_LOG_OUTPUT}" | grep -q "mcp__github__create_pending_pull_request_review") && \
+             ! (echo "${FULL_LOG_OUTPUT}" | grep -q "mcp__github__submit_pending_pull_request_review"); then
             
             echo "::error::Gemini CLI succeeded but did not call any GitHub tools. This is a silent failure."
-            echo "::error::See full model output in 'gemini_pr_review' step outputs or downloaded 'gemini-artifacts'."
+            echo "::error::See full model output in downloaded 'gemini-output' artifact."
             exit 1
           else
             echo "Success: Found expected GitHub tool calls in output."
           fi
 
-      # --- CHANGE #3: SIMPLIFIED 'if' CONDITION ---
-      # This will now run if *any* previous step fails,
-      # including the new "Check for Silent Failure" step.
       - name: 'Post PR review failure comment'
-        if: ${{ failure() }}
+        if: ${{ failure() }} # This correctly triggers on our "Check" step failure
         uses: 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea'
         with:
           github-token: '${{ secrets.REVIEWER_PAT }}'
