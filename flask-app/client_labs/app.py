@@ -80,8 +80,9 @@ def login():
             result_set = client.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = result_set.rows[0] if result_set.rows else None
 
-        if user and user[4] and check_password_hash(user[4], password):
-            session['user_id'] = user[0]
+        user_dict = dict(zip(result_set.columns, user)) if user else None
+        if user_dict and user_dict.get('password_hash') and check_password_hash(user_dict['password_hash'], password):
+            session['user_id'] = user_dict['id']
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password')
@@ -142,8 +143,9 @@ def google_authorize():
             result_set = client.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
             user = result_set.rows[0] if result_set.rows else None
 
-    # Store the user's ID in the session
-    session['user_id'] = user[0] # The user's ID is the first column
+    # Store the user's ID in the session by converting the row to a dictionary
+    user_dict = dict(zip(result_set.columns, user))
+    session['user_id'] = user_dict['id']
 
     return redirect(url_for('index'))
 
@@ -183,11 +185,8 @@ def logs():
     """Displays all logs from the database."""
     with database.get_db_connection() as client:
         result_set = client.execute("SELECT * FROM logs ORDER BY timestamp DESC")
-        # Convert rows to a list of dictionaries
-        logs = [dict(zip([d.name for d in result_set.column_descriptions], row)) for row in result_set.rows]
-        columns = [d.name for d in result_set.column_descriptions]
-        logs = [dict(zip(columns, row)) for row in result_set.rows]
-    
+                    columns = [d.name for d in result_set.column_descriptions]
+                    logs = [dict(zip(columns, row)) for row in result_set.rows]    
     return render_template("logs.html", logs=logs)
 
 if __name__ == "__main__":
