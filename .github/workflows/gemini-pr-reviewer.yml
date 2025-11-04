@@ -102,7 +102,8 @@ jobs:
         if: |-
           ${{ github.event_name == 'issue_comment' || github.event_name == 'pull_request_review' || github.event_name == 'pull_request_review_comment' }}
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          # Use the PAT here for consistency, as it needs write permissions
+          GITHUB_TOKEN: '${{ secrets.REVIEWER_PAT }}'
           COMMENT_BODY: '${{ github.event.comment.body || github.event.review.body }}'
           PR_NUMBER: '${{ github.event.issue.number || github.event.pull_request.number }}'
         run: |-
@@ -139,6 +140,10 @@ jobs:
           ADDITIONAL_INSTRUCTIONS: '${{ steps.get_pr.outputs.additional_instructions || steps.get_pr_comment.outputs.additional_instructions }}'
           REPOSITORY: '${{ github.repository }}'
         with:
+          # --- CHANGE #1: ADDED FOR DEBUGGING ---
+          # This will save the model's stdout.log and stderr.log as artifacts
+          # so you can see *what* the model responded with if it fails again.
+          upload_artifacts: true
           gemini_api_key: '${{ secrets.ACTIONS_GEMINI_API_KEY }}'
           settings: |-
             {
@@ -236,9 +241,34 @@ jobs:
             - Positive aspects of the implementation.
             ```
 
+      # --- CHANGE #2: ADDED NEW STEP TO DETECT SILENT FAILURE ---
+      # This step checks if the model *actually* tried to call the GitHub tools.
+      # If it only returned text, this step will fail, which will trigger
+      # the 'Post PR review failure comment' step below.
+      - name: 'Check for Silent Failure (No Tool Calls)'
+        if: ${{ steps.gemini_pr_review.outcome == 'success' }}
+        env:
+          GEMINI_RESPONSE: ${{ steps.gemini_pr_review.outputs.gemini_response }}
+        run: |
+          set -euo pipefail
+          echo "Checking for expected tool calls in Gemini output..."
+          
+          # Check if the output contains any of the required GitHub tool calls
+          if ! (echo "${GEMINI_RESPONSE}" | grep -q "mcp__github__create_pending_pull_request_review") && \
+             ! (echo "${GEMINI_RESPONSE}" | grep -q "mcp__github__submit_pending_pull_request_review"); then
+            
+            echo "::error::Gemini CLI succeeded but did not call any GitHub tools. This is a silent failure."
+            echo "::error::See full model output in 'gemini_pr_review' step outputs or downloaded 'gemini-artifacts'."
+            exit 1
+          else
+            echo "Success: Found expected GitHub tool calls in output."
+          fi
+
+      # --- CHANGE #3: SIMPLIFIED 'if' CONDITION ---
+      # This will now run if *any* previous step fails,
+      # including the new "Check for Silent Failure" step.
       - name: 'Post PR review failure comment'
-        if: |-
-          ${{ failure() && steps.gemini_pr_review.outcome == 'failure' }}
+        if: ${{ failure() }}
         uses: 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea'
         with:
           github-token: '${{ secrets.REVIEWER_PAT }}'
