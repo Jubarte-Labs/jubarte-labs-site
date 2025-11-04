@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Client Labs{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('main_assets.static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('client_labs.static', filename='client_labs.css') }}">
 </head>
 <body>
     <header>
         <nav>
             <a href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='Logo + text.svg') }}" alt="Jubarte Labs Logo" height="50">
+                <img src="{{ url_for('main_assets.static', filename='Logo + text.svg') }}" alt="Jubarte Labs Logo" height="50">
             </a>
             <div>
-                {% if session.logged_in %}
+                {% if g.user %}
                     <a href="{{ url_for('tool_1') }}">Word Count</a>
                     <a href="{{ url_for('sitemap_tool.sitemap_processor') }}">Sitemap Processor</a>
                     <a href="{{ url_for('logs') }}">Logs</a>

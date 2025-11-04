@@ -1,32 +1,25 @@
 import pytest
 from client_labs.app import app
-
-# Mock class for the database connection
-class MockDBClient:
-    def __enter__(self):
-        return self
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-    def execute(self, *args, **kwargs):
-        # Mock the execute call to do nothing
-        pass
-
-def mock_get_db_connection():
-    return MockDBClient()
+from client_labs.database import init_db, get_db_connection
 
 @pytest.fixture
-def client(monkeypatch):
-    # MOCK THE DATABASE CONNECTION
-    monkeypatch.setattr('client_labs.database.get_db_connection', mock_get_db_connection)
-    
+def client():
     app.config.update({
         "TESTING": True,
         "SECRET_KEY": "test_secret",
         "WTF_CSRF_ENABLED": False,
-        "APP_USERNAME": "testuser",
-        "APP_PASSWORD": "testpass"
     })
     with app.test_client() as client:
+        with app.app_context():
+            with get_db_connection() as db_client:
+                db_client.execute("DROP TABLE IF EXISTS users")
+                db_client.execute("DROP TABLE IF EXISTS logs")
+            init_db()
+            with get_db_connection() as db_client:
+                db_client.execute(
+                    "INSERT INTO users (id, email, name) VALUES (?, ?, ?)",
+                    (1, "test@example.com", "Test User")
+                )
         yield client
 
 def test_unauthenticated_access_redirects_to_login(client):
@@ -43,46 +36,11 @@ def test_unauthenticated_access_redirects_to_login(client):
     assert response.status_code == 302
     assert "login" in response.location
 
-def test_login_and_logout(client):
-    """Test the complete login and logout flow."""
-
-    # Test successful login and redirection
-    response = client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
-    assert response.status_code == 200
-    assert b"Dashboard" in response.data
-
-    # Verify access to protected pages after login
-    response = client.get("/")
-    assert response.status_code == 200
-    assert b"Dashboard" in response.data
-
-    response = client.get("/protected")
-    assert response.status_code == 200
-    assert b"Protected Page" in response.data
-
-    # Test logout
-    response = client.get("/logout", follow_redirects=True)
-    assert response.status_code == 200
-    assert b"Login" in response.data
-
-    # Verify that user is logged out and cannot access protected pages
-    response = client.get("/")
-    assert response.status_code == 302
-    assert "login" in response.location
-
-def test_invalid_login(client):
-    """Test that invalid login credentials display an error message."""
-
-    response = client.post("/login", data={"username": "wronguser", "password": "wrongpassword"}, follow_redirects=True)
-    assert response.status_code == 200
-    assert b"Invalid credentials" in response.data
-    assert b"Dashboard" not in response.data
-
 def test_tool_1_authenticated(client):
     """Test the word count tool functionality for an authenticated user."""
 
-    # Log in
-    client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
 
     # Test GET request to the tool page
     rv = client.get('/tool-1')
@@ -99,8 +57,8 @@ def test_tool_1_authenticated(client):
 def test_sitemap_tool_access(client):
     """Test that the sitemap tool page is accessible to an authenticated user."""
 
-    # Log in
-    client.post("/login", data={"username": "testuser", "password": "testpass"}, follow_redirects=True)
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
 
     # Test GET request to the sitemap tool page
     rv = client.get('/tools/sitemap-processor')

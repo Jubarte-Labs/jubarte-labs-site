@@ -1,68 +1,30 @@
 # Jubarte Labs Website
 
-This repository contains two main components:
-1.  **`main-site/`**: The static marketing website (deployed via Netlify).
-2.  **`flask-app/`**: A Python Flask application (deployed via Render) that hosts various client tools.
+This repository contains the codebase for the Jubarte Labs website and client portal.
 
----
+- **`main-site/`**: A static marketing and landing page.
+- **`flask-app/`**: A containerized Flask application that serves a client portal with authentication and various tools.
 
-## 🐳 Flask Application Setup (`flask-app/`)
+## Quick Start (Docker)
 
-This application uses a monolithic Flask structure with a Turso/SQLite database for logging.
+This project is configured to run in a local development environment using Docker and Docker Compose.
 
-### Prerequisites
+### 1. Setup
 
-*   Python 3.10+
-*   `pip` and `venv`
+For a complete, step-by-step guide on how to set up the environment, configure secrets, and initialize the database, please refer to the **[Agent & Developer Onboarding Guide](./AGENTS.md)**.
 
-### 1. Environment Variables
+### 2. Running the Application
 
-The application requires the following environment variables to be set in a `.env` file inside the `flask-app/` directory.
-
-| Variable | Description | Required |
-| :--- | :--- | :--- |
-| `FLASK_SECRET_KEY` | A long, random string for session security. | **Yes** |
-| `APP_USERNAME` | Username for the protected client login. | **Yes** |
-| `APP_PASSWORD` | Password for the protected client login. | **Yes** |
-| `TURSO_DATABASE_URL` | URL for the Turso database (e.g., `libsql://...`). | **Yes** |
-| `TURSO_AUTH_TOKEN` | Authentication token for the Turso database. | **Yes** |
-
-### 2. Installation
-
-Navigate to the `flask-app` directory and install dependencies:
+Once you have completed the setup in the onboarding guide, you can start the application with a single command:
 
 ```bash
-cd flask-app
-python -m venv .venv
-source .venv/bin/activate  # Use .venv\Scripts\activate on Windows
-pip install -r requirements.txt -r requirements-local.txt
+docker-compose up --build
 ```
 
-### 3. Running the Application
+The client portal will be available at `http://localhost:5000`.
 
-The application can be run directly:
+### 3. Stopping the Application
 
 ```bash
-python client_labs/app.py
+docker-compose down
 ```
-
-### 4. Running Tests
-
-Tests are configured to run without a live database connection using mocking.
-
-```bash
-cd flask-app
-# Ensure you are in the virtual environment
-set PYTHONPATH=. && python -m pytest tests
-```
-
----
-
-## 🌐 Main Site (`main-site/`)
-
-This is a static site. Refer to the `main-site/package.json` for build instructions.
-
-### Deployment
-
-*   **Netlify:** Deploys the `main-site/` directory.
-*   **Render:** Deploys the `flask-app/` directory using `gunicorn`.

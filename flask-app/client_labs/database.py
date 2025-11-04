@@ -2,6 +2,8 @@ import os
 import sys
 import libsql_client
 from sqlite3 import DatabaseError  # For database-specific exceptions
+import click
+from flask.cli import with_appcontext
 
 def get_db_connection():
     """Establishes a connection, handling both local file and remote DBs."""
@@ -49,8 +51,25 @@ def init_db():
                 output_data TEXT
             )
         """)
+        client.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                google_id TEXT UNIQUE,
+                email TEXT NOT NULL UNIQUE,
+                name TEXT,
+                password_hash TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
     except Exception as e:
         raise
     finally:
         if client:
             client.close()
+
+@click.command("init-db")
+@with_appcontext
+def init_db_command():
+    """Clears existing data and creates new tables."""
+    init_db()
+    click.echo("Initialized the database.")

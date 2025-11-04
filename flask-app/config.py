@@ -9,6 +9,11 @@ class Config:
     WTF_CSRF_ENABLED = os.environ.get('WTF_CSRF_ENABLED', 'True').lower() in ['true', '1', 't']
     APP_USERNAME = os.environ.get('APP_USERNAME')
     APP_PASSWORD = os.environ.get('APP_PASSWORD')
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     DEBUG = False
     TESTING = False
 

@@ -1,0 +1,43 @@
+:root {
+    --primary-text-color: #131317;
+    --secondary-text-color: #454655;
+    --background-color: #ffffff;
+    --button-text-color: #FFFFFF;
+    --accent-color-1: #566b7a;
+    --accent-color-2: #454655;
+    --accent-color-3: #463346;
+    --border-color: #ddd;
+}
+
+body {
+    font-family: 'Anonymous Pro', monospace;
+    color: var(--primary-text-color);
+    background-color: var(--background-color);
+}
+
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.btn-primary {
+    background-color: var(--primary-text-color);
+    border-color: var(--primary-text-color);
+    color: var(--button-text-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color-1);
+    border-color: var(--accent-color-1);
+}
+
+.btn-secondary {
+    background-color: var(--accent-color-2);
+    border-color: var(--accent-color-2);
+    color: var(--button-text-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--accent-color-3);
+    border-color: var(--accent-color-3);
+}

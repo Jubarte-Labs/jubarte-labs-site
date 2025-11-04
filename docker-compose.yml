@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./flask-app:/app
+    env_file:
+      - ./.env
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=client_labs.app
+      - FLASK_DEBUG=1
