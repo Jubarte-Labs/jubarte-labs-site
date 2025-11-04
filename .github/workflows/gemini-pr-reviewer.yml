@@ -246,16 +246,18 @@ jobs:
       # If it only returned text, this step will fail, which will trigger
       # the 'Post PR review failure comment' step below.
       - name: 'Check for Silent Failure (No Tool Calls)'
+        # This step now checks both stdout and stderr for the tool call
         if: ${{ steps.gemini_pr_review.outcome == 'success' }}
         env:
-          GEMINI_RESPONSE: ${{ steps.gemini_pr_review.outputs.gemini_response }}
+          # Combine both stdout and stderr. The tool calls are likely in stderr.
+          FULL_GEMINI_OUTPUT: "${{ steps.gemini_pr_review.outputs.gemini_response }}${{ steps.gemini_pr_review.outputs.gemini_errors }}"
         run: |
           set -euo pipefail
-          echo "Checking for expected tool calls in Gemini output..."
+          echo "Checking for expected tool calls in combined Gemini output..."
           
-          # Check if the output contains any of the required GitHub tool calls
-          if ! (echo "${GEMINI_RESPONSE}" | grep -q "mcp__github__create_pending_pull_request_review") && \
-             ! (echo "${GEMINI_RESPONSE}" | grep -q "mcp__github__submit_pending_pull_request_review"); then
+          # Check if the *combined* output contains any of the required GitHub tool calls
+          if ! (echo "${FULL_GEMINI_OUTPUT}" | grep -q "mcp__github__create_pending_pull_request_review") && \
+             ! (echo "${FULL_GEMINI_OUTPUT}" | grep -q "mcp__github__submit_pending_pull_request_review"); then
             
             echo "::error::Gemini CLI succeeded but did not call any GitHub tools. This is a silent failure."
             echo "::error::See full model output in 'gemini_pr_review' step outputs or downloaded 'gemini-artifacts'."
